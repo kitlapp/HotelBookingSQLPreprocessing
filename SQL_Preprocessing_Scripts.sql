@@ -228,7 +228,7 @@ SELECT * FROM table_shape('public', 'table6'); -- Check shape (should be 118_490
 
 ---------------------------- 2.6. Handling meal Column ----------------------------
 
--- Make a copy before further preprocessing (SQL table5 corresponds to Python DataFrame dfdash5) 
+-- Make a copy before further preprocessing (SQL table7 corresponds to Python DataFrame dfdash7) 
 CREATE TABLE table7 AS
 SELECT *
 FROM table6;
@@ -258,3 +258,27 @@ DROP COLUMN meal;
 SELECT * FROM table7 LIMIT 10;  -- Check table values
 SELECT * FROM table_shape('public', 'table7'); -- Check shape (should be 117_325, 24)
 SELECT * FROM table_summary('public', 'table7'); -- Check nulls (should be 0)
+
+---------------------------- 2.7. Handling market_segment Column ----------------------------
+
+-- Make a copy before further preprocessing (SQL table8 corresponds to Python DataFrame dfdash8) 
+CREATE TABLE table8 AS
+SELECT *
+FROM table7;
+
+-- Drop all rows where the 'market_segment' column has the category 'Undefined'
+DELETE FROM table8
+WHERE market_segment = 'Undefined';
+
+-- Replace the 'Complementary' and 'Aviation' categories in the 'market_segment' column with 'Other'
+UPDATE table8
+SET market_segment = CASE market_segment
+    WHEN 'Complementary' THEN 'Other'
+    WHEN 'Aviation' THEN 'Other'
+    ELSE market_segment
+END;
+
+-- Final check on this preprocessing step
+SELECT * FROM table8 LIMIT 10;  -- Check table values
+SELECT * FROM table_shape('public', 'table8'); -- Check shape (should be 117_323, 24)
+SELECT * FROM table_summary('public', 'table8'); -- Check nulls (should be 0)
