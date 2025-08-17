@@ -244,3 +244,23 @@ SELECT * FROM table9 LIMIT 10;  -- Check table values
 SELECT * FROM table_shape('public', 'table9'); -- Check shape (should be 117_320, 24)
 SELECT * FROM table_summary('public', 'table9'); -- Check nulls (should be 0)
 
+---------------------------- 2.9. Handling reserved_room_type Column ----------------------------
+
+-- Make a copy before further preprocessing (SQL table10 corresponds to Python DataFrame dfdash10) 
+CREATE TABLE table10 AS
+SELECT *
+FROM table9;
+
+-- Replace specific categories with 'Other'
+UPDATE table10
+SET reserved_room_type = CASE reserved_room_type
+    WHEN 'C' THEN 'Other'
+    WHEN 'B' THEN 'Other'
+    WHEN 'H' THEN 'Other'
+    WHEN 'L' THEN 'Other'
+    ELSE reserved_room_type
+END;
+
+-- Final check on this preprocessing step
+SELECT * FROM table10 LIMIT 10;  -- Check table values
+SELECT * FROM table_shape('public', 'table10'); -- Check shape (should be 117_320, 24)
