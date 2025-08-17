@@ -161,4 +161,30 @@ SELECT * FROM table_summary('public', 'table3'); -- Check nulls (should be 0)
 SELECT column_name, data_type FROM information_schema.COLUMNS WHERE table_name = 'table3';
 
 
+---------------------------- 2.3. Dropping Unimportant Columns ----------------------------
+
+
+-- Make a copy before further preprocessing (SQL table4 corresponds to Python DataFrame dfdash4) 
+CREATE TABLE table4 AS
+SELECT *
+FROM table3;
+
+ALTER TABLE table4
+DROP COLUMN name,
+DROP COLUMN email,
+DROP COLUMN arrival_date_month,
+DROP COLUMN arrival_date_day_of_month,
+DROP COLUMN "phone-number",  -- Is quoted because it contains a hyphen
+DROP COLUMN credit_card,
+DROP COLUMN reservation_status,
+DROP COLUMN reservation_status_date,
+DROP COLUMN assigned_room_type,
+DROP COLUMN deposit_type,
+DROP COLUMN required_car_parking_spaces,
+DROP COLUMN arrival_date_week_number;
+
+-- Final check on this preprocessing step
+SELECT * FROM table4 LIMIT 10;  -- Check table values
+SELECT * FROM table_shape('public', 'table4'); -- Check shape (should be 118_902, 25)
+
 
