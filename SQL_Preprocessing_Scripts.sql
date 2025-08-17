@@ -215,5 +215,14 @@ WHERE total_kids > 3;
 SELECT * FROM table5 LIMIT 10;  -- Check table values
 SELECT * FROM table_shape('public', 'table5'); -- Check shape (should be 118_899, 24)
 
+---------------------------- 2.5. Handling Adults Column ----------------------------
 
+-- Create a new table keeping values for adults between 1 and 4
+CREATE TABLE table6 AS
+SELECT * FROM table5
+WHERE adults > 0 AND adults <= 4
+
+-- Final check on this preprocessing step
+SELECT * FROM table6 LIMIT 10;  -- Check table values
+SELECT * FROM table_shape('public', 'table6'); -- Check shape (should be 118_490, 24)
 
