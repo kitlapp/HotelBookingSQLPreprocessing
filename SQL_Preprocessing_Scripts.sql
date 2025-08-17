@@ -69,14 +69,13 @@ SELECT
 
 ----------------- SECTION 2 OF GOOGLE COLAB PREPROCESSING -----------------
 
----------------------------- Handling Null Values ----------------------------
+---------------------------- 2.1. Handling Null Values ----------------------------
 
 -- Check for nulls 
 -- column country has 488 missing values, agent 16340 and company 112593 according to Python
-SELECT * FROM table_summary('public', 'table2');
+SELECT * FROM table_summary('public', 'table_raw');
 
--- Make a copy before further preprocessing
--- table2 refers to dfdash2
+-- Make a copy before further preprocessing (SQL table2 corresponds to Python DataFrame dfdash2) 
 CREATE TABLE table2 AS
 SELECT *
 FROM table_raw;
@@ -108,17 +107,58 @@ WHERE company IS NULL;
 DELETE FROM table2
 WHERE country IS NULL;
 
+-- Final check on this preprocessing step
+SELECT * FROM table2 LIMIT 10;  -- Check table values
 SELECT * FROM table_shape('public', 'table2'); -- Check shape (should be 118_902, 36)
 SELECT * FROM table_summary('public', 'table2'); -- Check nulls (should be 0)
 
 
+---------------------------- 2.2. Handling Date-Related Columns ----------------------------
 
+-- Make a copy before further preprocessing (SQL table3 corresponds to Python DataFrame dfdash3) 
+CREATE TABLE table3 AS
+SELECT *
+FROM table2;
 
+-- Mapping month names to their corresponding numeric values
+UPDATE table3
+SET arrival_date_month = CASE arrival_date_month
+    WHEN 'January' THEN 1
+    WHEN 'February' THEN 2
+    WHEN 'March' THEN 3
+    WHEN 'April' THEN 4
+    WHEN 'May' THEN 5
+    WHEN 'June' THEN 6
+    WHEN 'July' THEN 7
+    WHEN 'August' THEN 8
+    WHEN 'September' THEN 9
+    WHEN 'October' THEN 10
+    WHEN 'November' THEN 11
+    WHEN 'December' THEN 12
+END;
 
+-- Make arrival_date_month INT
+ALTER TABLE table3
+ALTER COLUMN arrival_date_month TYPE INT USING arrival_date_month::int;
 
+-- Add a new date column to the table
+ALTER TABLE table3
+ADD COLUMN arrival_date DATE;
 
+-- Combine year, month, and day columns into a single date string in 'YYYY-MM-DD' format
+UPDATE table3
+SET arrival_date = MAKE_DATE(
+    arrival_date_year::int,   -- cast temporarily bigint to int
+    arrival_date_month,       -- already int
+    arrival_date_day_of_month::int  -- cast temporarily bigint to int
+);
 
-
+-- Final check on this preprocessing step
+SELECT * FROM table3 LIMIT 10;  -- Check table values
+SELECT * FROM table_shape('public', 'table3'); -- Check shape (should be 118_902, 37)
+SELECT * FROM table_summary('public', 'table3'); -- Check nulls (should be 0)
+-- Check data types
+SELECT column_name, data_type FROM information_schema.COLUMNS WHERE table_name = 'table3';
 
 
 
