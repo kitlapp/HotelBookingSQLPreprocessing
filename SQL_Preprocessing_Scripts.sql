@@ -215,7 +215,7 @@ WHERE total_kids > 3;
 SELECT * FROM table5 LIMIT 10;  -- Check table values
 SELECT * FROM table_shape('public', 'table5'); -- Check shape (should be 118_899, 24)
 
----------------------------- 2.5. Handling Adults Column ----------------------------
+---------------------------- 2.5. Handling adults Column ----------------------------
 
 -- Create a new table keeping values for adults between 1 and 4
 CREATE TABLE table6 AS
@@ -226,3 +226,35 @@ WHERE adults > 0 AND adults <= 4
 SELECT * FROM table6 LIMIT 10;  -- Check table values
 SELECT * FROM table_shape('public', 'table6'); -- Check shape (should be 118_490, 24)
 
+---------------------------- 2.6. Handling meal Column ----------------------------
+
+-- Make a copy before further preprocessing (SQL table5 corresponds to Python DataFrame dfdash5) 
+CREATE TABLE table7 AS
+SELECT *
+FROM table6;
+
+-- Drop rows where the 'meal' column is 'Undefined', indicating no meal choice
+DELETE FROM table7
+WHERE meal = 'Undefined';
+
+-- Add a new column number_of_meals
+ALTER TABLE table7 
+ADD COLUMN number_of_meals INT;
+
+-- Map meal types
+UPDATE table7 
+SET number_of_meals = CASE meal
+	WHEN 'BB' THEN 1
+	WHEN 'HB' THEN 2
+	WHEN 'SC' THEN 0
+	WHEN 'FB' THEN 3
+END;
+
+-- Drop the original meal column
+ALTER TABLE table7
+DROP COLUMN meal;
+
+-- Final check on this preprocessing step
+SELECT * FROM table7 LIMIT 10;  -- Check table values
+SELECT * FROM table_shape('public', 'table7'); -- Check shape (should be 117_325, 24)
+SELECT * FROM table_summary('public', 'table7'); -- Check nulls (should be 0)
