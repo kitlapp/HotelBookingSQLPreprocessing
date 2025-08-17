@@ -290,3 +290,23 @@ DROP COLUMN company;
 -- Final check on this preprocessing step
 SELECT * FROM table11 LIMIT 30;  -- Check table values
 SELECT * FROM table_shape('public', 'table11'); -- Check shape (should be 117_320, 24)
+
+---------------------------- 2.11. Handling adr & lead_time Outliers ----------------------------
+
+-- Make a copy before further preprocessing (SQL table12 corresponds to Python DataFrame dfdash12) 
+CREATE TABLE table12 AS
+SELECT *
+FROM table11;
+
+-- Remove adr outliers
+DELETE FROM table12
+WHERE adr >= 5400 OR adr < 0;
+
+-- Remove lead_time outliers
+DELETE FROM table12
+WHERE lead_time >= 640;
+
+-- Final check on this preprocessing step
+SELECT * FROM table12 LIMIT 30;  -- Check table values
+SELECT * FROM table_shape('public', 'table12'); -- Check shape (should be 117_316, 24)
+
