@@ -310,3 +310,31 @@ WHERE lead_time >= 640;
 SELECT * FROM table12 LIMIT 30;  -- Check table values
 SELECT * FROM table_shape('public', 'table12'); -- Check shape (should be 117_316, 24)
 
+---------------------------- 2.12. Final Check on Dtypes ----------------------------
+
+-- Make a copy before further preprocessing (SQL table13 corresponds to Python DataFrame dfdash13) 
+CREATE TABLE table13 AS
+SELECT *
+FROM table12;
+
+ALTER TABLE table13
+ALTER COLUMN is_canceled TYPE INT USING is_canceled::INT,
+ALTER COLUMN lead_time TYPE INT USING lead_time::INT,
+ALTER COLUMN arrival_date_year TYPE INT USING arrival_date_year::INT,
+ALTER COLUMN stays_in_weekend_nights TYPE INT USING stays_in_weekend_nights::INT,
+ALTER COLUMN stays_in_week_nights TYPE INT USING stays_in_week_nights::INT,
+ALTER COLUMN adults TYPE INT USING adults::INT,
+ALTER COLUMN total_of_special_requests TYPE INT USING total_of_special_requests::INT,
+ALTER COLUMN is_repeated_guest TYPE INT USING is_repeated_guest::INT,
+ALTER COLUMN previous_cancellations TYPE INT USING previous_cancellations::INT,
+ALTER COLUMN previous_bookings_not_canceled TYPE INT USING previous_bookings_not_canceled::INT,
+ALTER COLUMN booking_changes TYPE INT USING booking_changes::INT,
+ALTER COLUMN days_in_waiting_list TYPE INT USING days_in_waiting_list::INT;
+
+-- Final check on this preprocessing step
+SELECT * FROM table13 LIMIT 30;  -- Check table values
+SELECT * FROM table_shape('public', 'table13'); -- Check shape (should be 117_316, 24)
+-- Check data types
+SELECT column_name, data_type FROM information_schema.COLUMNS WHERE table_name = 'table13';
+
+
