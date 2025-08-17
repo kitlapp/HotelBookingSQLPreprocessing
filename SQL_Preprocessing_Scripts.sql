@@ -187,4 +187,33 @@ DROP COLUMN arrival_date_week_number;
 SELECT * FROM table4 LIMIT 10;  -- Check table values
 SELECT * FROM table_shape('public', 'table4'); -- Check shape (should be 118_902, 25)
 
+---------------------------- 2.4. Creating total_kids Column ----------------------------
+
+-- Make a copy before further preprocessing (SQL table5 corresponds to Python DataFrame dfdash5) 
+CREATE TABLE table5 AS
+SELECT *
+FROM table4;
+
+-- Add a new column of type INT to the table5
+ALTER TABLE table5
+ADD COLUMN total_kids INT;
+
+-- Make total_kids col to equal the sum of children + babies
+UPDATE table5
+SET total_kids = children::int + babies::int;
+
+-- Drop the original 'children' and 'babies' columns after merging
+ALTER TABLE table5
+DROP COLUMN children,
+DROP COLUMN babies;
+
+-- Drop rows with outliers (total kids > 3) and reset index in the dashboard dataframe
+DELETE FROM table5
+WHERE total_kids > 3;
+
+-- Final check on this preprocessing step
+SELECT * FROM table5 LIMIT 10;  -- Check table values
+SELECT * FROM table_shape('public', 'table5'); -- Check shape (should be 118_899, 24)
+
+
 
