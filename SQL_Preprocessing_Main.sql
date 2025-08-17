@@ -264,3 +264,29 @@ END;
 -- Final check on this preprocessing step
 SELECT * FROM table10 LIMIT 10;  -- Check table values
 SELECT * FROM table_shape('public', 'table10'); -- Check shape (should be 117_320, 24)
+
+---------------------------- 2.10. Handling agent & company Columns ----------------------------
+
+-- Make a copy before further preprocessing (SQL table11 corresponds to Python DataFrame dfdash11) 
+CREATE TABLE table11 AS
+SELECT *
+FROM table10;
+
+-- Add new columns with more intuitive names
+ALTER TABLE table11
+ADD COLUMN has_agent INT,
+ADD COLUMN has_company INT;
+
+-- Convert 'has_company' and 'has_agent' columns to binary: 1 if not 0, else 0
+UPDATE table11
+SET has_agent = CASE WHEN agent != 0 THEN 1 ELSE 0 END,
+    has_company = CASE WHEN company != 0 THEN 1 ELSE 0 END;
+
+-- Drop original columns
+ALTER TABLE table11
+DROP COLUMN agent,
+DROP COLUMN company;
+
+-- Final check on this preprocessing step
+SELECT * FROM table11 LIMIT 30;  -- Check table values
+SELECT * FROM table_shape('public', 'table11'); -- Check shape (should be 117_320, 24)
