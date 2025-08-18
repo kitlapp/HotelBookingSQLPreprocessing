@@ -338,3 +338,9 @@ SELECT * FROM table13 LIMIT 30;  -- Check table values
 SELECT * FROM table_shape('public', 'table13'); -- Check shape (should be 117_316, 23)
 -- Check data types
 SELECT column_name, data_type FROM information_schema.COLUMNS WHERE table_name = 'table13';
+
+/* The duplicates in this dataset were generated due to simplifications during preprocessing. 
+For example, all high-cardinality columns were dropped, and further preprocessing made some 
+rows less unique. Only the arrival_date column remains as a high-cardinality column, 
+so bookings on the same day may appear as duplicates in the final cleaned dataset, 
+but all rows still represent valid, unique bookings.*/
