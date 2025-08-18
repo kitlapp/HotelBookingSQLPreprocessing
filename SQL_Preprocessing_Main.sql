@@ -2,7 +2,7 @@
 
 --------- Section 1 just includes raw_data, so we 'll just make simple checks ---------
 
--- Check number of rows, columns of table_raw (has to be 119_390, 36 according to Python)
+-- Check number of rows and columns of table_raw (has to be 119_390, 36 according to Python)
 SELECT * FROM table_shape('public', 'table_raw');
 
 -- Check for duplicates (the result should equal to 0 according to Python)
@@ -119,6 +119,7 @@ DROP COLUMN name,
 DROP COLUMN email,
 DROP COLUMN arrival_date_month,
 DROP COLUMN arrival_date_day_of_month,
+DROP COLUMN arrival_date_year,
 DROP COLUMN "phone-number",  -- Is quoted because it contains a hyphen
 DROP COLUMN credit_card,
 DROP COLUMN reservation_status,
@@ -130,7 +131,7 @@ DROP COLUMN arrival_date_week_number;
 
 -- Final check on this preprocessing step
 SELECT * FROM table4 LIMIT 10;  -- Check table values
-SELECT * FROM table_shape('public', 'table4'); -- Check shape (should be 118_902, 25)
+SELECT * FROM table_shape('public', 'table4'); -- Check shape (should be 118_902, 24)
 
 ---------------------------- 2.4. Creating total_kids Column ----------------------------
 
@@ -158,18 +159,18 @@ WHERE total_kids > 3;
 
 -- Final check on this preprocessing step
 SELECT * FROM table5 LIMIT 10;  -- Check table values
-SELECT * FROM table_shape('public', 'table5'); -- Check shape (should be 118_899, 24)
+SELECT * FROM table_shape('public', 'table5'); -- Check shape (should be 118_899, 23)
 
 ---------------------------- 2.5. Handling adults Column ----------------------------
 
 -- Create a new table keeping values for adults between 1 and 4
-CREATE TABLE table6 AS
+CREATE TABLE table6 AS  -- SQL table6 corresponds to Python DataFrame dfdash6 
 SELECT * FROM table5
 WHERE adults > 0 AND adults <= 4;
 
 -- Final check on this preprocessing step
 SELECT * FROM table6 LIMIT 10;  -- Check table values
-SELECT * FROM table_shape('public', 'table6'); -- Check shape (should be 118_490, 24)
+SELECT * FROM table_shape('public', 'table6'); -- Check shape (should be 118_490, 23)
 
 ---------------------------- 2.6. Handling meal Column ----------------------------
 
@@ -201,7 +202,7 @@ DROP COLUMN meal;
 
 -- Final check on this preprocessing step
 SELECT * FROM table7 LIMIT 10;  -- Check table values
-SELECT * FROM table_shape('public', 'table7'); -- Check shape (should be 117_325, 24)
+SELECT * FROM table_shape('public', 'table7'); -- Check shape (should be 117_325, 23)
 SELECT * FROM table_summary('public', 'table7'); -- Check nulls (should be 0)
 
 ---------------------------- 2.7. Handling market_segment Column ----------------------------
@@ -225,12 +226,12 @@ END;
 
 -- Final check on this preprocessing step
 SELECT * FROM table8 LIMIT 10;  -- Check table values
-SELECT * FROM table_shape('public', 'table8'); -- Check shape (should be 117_323, 24)
+SELECT * FROM table_shape('public', 'table8'); -- Check shape (should be 117_323, 23)
 SELECT * FROM table_summary('public', 'table8'); -- Check nulls (should be 0)
 
 ---------------------------- 2.8. Handling distribution_channel Column ----------------------------
 
--- Make a copy before further preprocessing (SQL table8 corresponds to Python DataFrame dfdash8) 
+-- Make a copy before further preprocessing (SQL table9 corresponds to Python DataFrame dfdash9) 
 CREATE TABLE table9 AS
 SELECT *
 FROM table8;
@@ -241,7 +242,7 @@ WHERE distribution_channel = 'Undefined';
 
 -- Final check on this preprocessing step
 SELECT * FROM table9 LIMIT 10;  -- Check table values
-SELECT * FROM table_shape('public', 'table9'); -- Check shape (should be 117_320, 24)
+SELECT * FROM table_shape('public', 'table9'); -- Check shape (should be 117_320, 23)
 SELECT * FROM table_summary('public', 'table9'); -- Check nulls (should be 0)
 
 ---------------------------- 2.9. Handling reserved_room_type Column ----------------------------
@@ -263,7 +264,7 @@ END;
 
 -- Final check on this preprocessing step
 SELECT * FROM table10 LIMIT 10;  -- Check table values
-SELECT * FROM table_shape('public', 'table10'); -- Check shape (should be 117_320, 24)
+SELECT * FROM table_shape('public', 'table10'); -- Check shape (should be 117_320, 23)
 
 ---------------------------- 2.10. Handling agent & company Columns ----------------------------
 
@@ -289,7 +290,7 @@ DROP COLUMN company;
 
 -- Final check on this preprocessing step
 SELECT * FROM table11 LIMIT 30;  -- Check table values
-SELECT * FROM table_shape('public', 'table11'); -- Check shape (should be 117_320, 24)
+SELECT * FROM table_shape('public', 'table11'); -- Check shape (should be 117_320, 23)
 
 ---------------------------- 2.11. Handling adr & lead_time Outliers ----------------------------
 
@@ -308,9 +309,11 @@ WHERE lead_time >= 640;
 
 -- Final check on this preprocessing step
 SELECT * FROM table12 LIMIT 30;  -- Check table values
-SELECT * FROM table_shape('public', 'table12'); -- Check shape (should be 117_316, 24)
+SELECT * FROM table_shape('public', 'table12'); -- Check shape (should be 117_316, 23)
 
 ---------------------------- 2.12. Final Check on Dtypes ----------------------------
+
+-------------------------- THIS IS THE FINAL CLEANED TABLE: table13 --------------------------
 
 -- Make a copy before further preprocessing (SQL table13 corresponds to Python DataFrame dfdash13) 
 CREATE TABLE table13 AS
@@ -320,7 +323,6 @@ FROM table12;
 ALTER TABLE table13
 ALTER COLUMN is_canceled TYPE INT USING is_canceled::INT,
 ALTER COLUMN lead_time TYPE INT USING lead_time::INT,
-ALTER COLUMN arrival_date_year TYPE INT USING arrival_date_year::INT,
 ALTER COLUMN stays_in_weekend_nights TYPE INT USING stays_in_weekend_nights::INT,
 ALTER COLUMN stays_in_week_nights TYPE INT USING stays_in_week_nights::INT,
 ALTER COLUMN adults TYPE INT USING adults::INT,
@@ -333,8 +335,6 @@ ALTER COLUMN days_in_waiting_list TYPE INT USING days_in_waiting_list::INT;
 
 -- Final check on this preprocessing step
 SELECT * FROM table13 LIMIT 30;  -- Check table values
-SELECT * FROM table_shape('public', 'table13'); -- Check shape (should be 117_316, 24)
+SELECT * FROM table_shape('public', 'table13'); -- Check shape (should be 117_316, 23)
 -- Check data types
 SELECT column_name, data_type FROM information_schema.COLUMNS WHERE table_name = 'table13';
-
-
