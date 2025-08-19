@@ -311,9 +311,7 @@ WHERE lead_time >= 640;
 SELECT * FROM table12 LIMIT 30;  -- Check table values
 SELECT * FROM table_shape('public', 'table12'); -- Check shape (should be 117_316, 23)
 
----------------------------- 2.12. Final Check on Dtypes ----------------------------
-
--------------------------- THIS IS THE FINAL CLEANED TABLE: table13 --------------------------
+---------------------------- 2.12. Finalizing the Dtypes ----------------------------
 
 -- Make a copy before further preprocessing (SQL table13 corresponds to Python DataFrame dfdash13) 
 CREATE TABLE table13 AS
@@ -333,14 +331,39 @@ ALTER COLUMN previous_bookings_not_canceled TYPE INT USING previous_bookings_not
 ALTER COLUMN booking_changes TYPE INT USING booking_changes::INT,
 ALTER COLUMN days_in_waiting_list TYPE INT USING days_in_waiting_list::INT;
 
+---------------------------- 2.13. Final Checks on Data Integrity ----------------------------
+
+-------------------------- THIS IS THE FINAL CLEANED TABLE: table13 --------------------------
+
 -- Final check on this preprocessing step
+
 SELECT * FROM table13 LIMIT 30;  -- Check table values
+
 SELECT * FROM table_shape('public', 'table13'); -- Check shape (should be 117_316, 23)
+
 -- Check data types
 SELECT column_name, data_type FROM information_schema.COLUMNS WHERE table_name = 'table13';
+
+-- Check for duplicates (the result should equal to 0 according to Python)
+SELECT 
+    (SELECT COUNT(*) FROM table13) 
+  - (SELECT COUNT(*) FROM (SELECT DISTINCT * FROM table13)) 
+  AS number_of_duplicates;
 
 /* The duplicates in this dataset were generated due to simplifications during preprocessing. 
 For example, all high-cardinality columns were dropped, and further preprocessing made some 
 rows less unique. Only the arrival_date column remains as a high-cardinality column, 
 so bookings on the same day may appear as duplicates in the final cleaned dataset, 
 but all rows still represent valid, unique bookings.*/
+
+-- Check the unique values of arrival_date (this is the only high cardinality column left in the dataset)
+SELECT COUNT(DISTINCT arrival_date)
+FROM table13;
+
+-- Show dates that include 100 bookings
+SELECT arrival_date, COUNT(*) AS booking_count
+FROM table13 
+GROUP BY arrival_date
+HAVING COUNT(*) = 100;
+
+
